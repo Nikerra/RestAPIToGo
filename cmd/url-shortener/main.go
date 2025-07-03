@@ -2,6 +2,7 @@ package main
 
 import (
 	"RestApi/internal/config"
+	"RestApi/internal/storage/sqllite"
 	"fmt"
 	"log/slog"
 	"os"
@@ -23,7 +24,14 @@ func main() {
 		slog.String("env", cfg.Env))
 	log.Debug("Debug messages are enabled")
 
-	//TODO: init storage: sqlite
+	storage, err := sqllite.New(cfg.StoragePath)
+	if err != nil {
+		log.Error("failed to init storage", err.Error())
+		os.Exit(1)
+	}
+
+	_ = storage
+	log.Info("Starting db connection")
 
 	//TODO: router: chi, "chi render"
 
