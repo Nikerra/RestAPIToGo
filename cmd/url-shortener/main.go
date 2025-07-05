@@ -29,10 +29,45 @@ func main() {
 		log.Error("failed to init storage", err.Error())
 		os.Exit(1)
 	}
-
-	_ = storage
 	log.Info("Starting db connection")
+	///////////////////////////////////////////////////////////////////////
+	//id, err := storage.SaveURL("https://google.com", "google")
+	//if err != nil {
+	//	log.Error("failed to save url", err.Error())
+	//	os.Exit(1)
+	//}
+	//log.Info("Successfully saved url", slog.Int64("id", id))
 
+	alias := "google"
+	resURL, err := storage.GetURL(alias)
+	if err != nil {
+		log.Error("failed to retrieve url", err.Error())
+	} else {
+		log.Info(fmt.Sprintf("Get url for alias=%s, url=%s", alias, resURL))
+	}
+
+	alias = "yandex"
+	resURL, err = storage.GetURL(alias)
+	if err != nil {
+		log.Error("failed to retrieve url", err.Error())
+	} else {
+		log.Info(fmt.Sprintf("Get url for alias=%s, url=%s", alias, resURL))
+	}
+
+	alias = "google"
+	err = storage.DeleteURL(alias)
+	if err != nil {
+		log.Error("failed to delete url", err.Error())
+	} else {
+		log.Info(fmt.Sprintf("Delete url for alias=%s", alias))
+	}
+
+	id, err := storage.SaveURL("https://google.com", "google")
+	if err != nil {
+		log.Error("failed to save url", err.Error())
+		os.Exit(1)
+	}
+	log.Info("Successfully saved url", slog.Int64("id", id))
 	//TODO: router: chi, "chi render"
 
 	//TODO: run server
