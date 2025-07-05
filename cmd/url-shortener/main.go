@@ -2,8 +2,12 @@ package main
 
 import (
 	"RestApi/internal/config"
+	mwLogger "RestApi/internal/http-server/middleware/logger"
+	"RestApi/internal/lib/handlers/slogpretty"
 	"RestApi/internal/storage/sqllite"
 	"fmt"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
 	"os"
 )
@@ -68,7 +72,14 @@ func main() {
 		os.Exit(1)
 	}
 	log.Info("Successfully saved url", slog.Int64("id", id))
-	//TODO: router: chi, "chi render"
+
+	router := chi.NewRouter()
+
+	router.Use(middleware.RequestID)
+	router.Use(middleware.Logger)
+	router.Use(mwLogger.New(log))
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.URLFormat)
 
 	//TODO: run server
 }
@@ -78,9 +89,7 @@ func setupLogger(env string) *slog.Logger {
 
 	switch env {
 	case envLocal:
-		log = slog.New(slog.NewTextHandler(
-			os.Stdout,
-			&slog.HandlerOptions{Level: slog.LevelDebug}))
+		log = setupPrettySlog()
 	case envDev:
 		log = slog.New(
 			slog.NewJSONHandler(
@@ -94,4 +103,16 @@ func setupLogger(env string) *slog.Logger {
 	}
 
 	return log
+}
+
+func setupPrettySlog() *slog.Logger {
+	opts := slogpretty.PrettyHandlerOptions{
+		SlogOpts: &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		},
+	}
+
+	handler := opts.NewPrettyHandler(os.Stdout)
+
+	return slog.New(handler)
 }
