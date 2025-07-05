@@ -53,7 +53,7 @@ func main() {
 	alias = "yandex"
 	resURL, err = storage.GetURL(alias)
 	if err != nil {
-		log.Error("failed to retrieve url", err.Error())
+		log.Error(fmt.Sprintf("for alias \"%s\" failed to retrieve url", alias), err.Error())
 	} else {
 		log.Info(fmt.Sprintf("Get url for alias=%s, url=%s", alias, resURL))
 	}
