@@ -2,6 +2,7 @@ package main
 
 import (
 	"RestApi/internal/config"
+	"RestApi/internal/http-server/hadlers/url/save"
 	mwLogger "RestApi/internal/http-server/middleware/logger"
 	"RestApi/internal/lib/handlers/slogpretty"
 	"RestApi/internal/storage/sqllite"
@@ -9,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
+	"net/http"
 	"os"
 )
 
@@ -30,57 +32,75 @@ func main() {
 
 	storage, err := sqllite.New(cfg.StoragePath)
 	if err != nil {
-		log.Error("failed to init storage", err.Error())
+		log.Error("failed to init storage", "error", err.Error())
 		os.Exit(1)
 	}
 	log.Info("Starting db connection")
-	///////////////////////////////////////////////////////////////////////
+
+	/////////////////////////////////////////////////////////////////////////
+	////id, err := storage.SaveURL("https://google.com", "google")
+	////if err != nil {
+	////	log.Error("failed to save url", "error", err.Error())
+	////	os.Exit(1)
+	////}
+	////log.Info("Successfully saved url", slog.Int64("id", id))
+	//
+	//alias := "google"
+	//resURL, err := storage.GetURL(alias)
+	//if err != nil {
+	//	log.Error("failed to retrieve url", "error", err.Error())
+	//} else {
+	//	log.Info(fmt.Sprintf("Get url for alias=%s, url=%s", alias, resURL))
+	//}
+	//
+	//alias = "yandex"
+	//resURL, err = storage.GetURL(alias)
+	//if err != nil {
+	//	log.Error(
+	//		fmt.Sprintf("for alias \"%s\" failed to retrieve url", alias),
+	//		"error", err.Error())
+	//} else {
+	//	log.Info(fmt.Sprintf("Get url for alias=%s, url=%s", alias, resURL))
+	//}
+	//
+	//alias = "google"
+	//err = storage.DeleteURL(alias)
+	//if err != nil {
+	//	log.Error("failed to delete url", "error", err.Error())
+	//} else {
+	//	log.Info(fmt.Sprintf("Delete url for alias=%s", alias))
+	//}
+	//
 	//id, err := storage.SaveURL("https://google.com", "google")
 	//if err != nil {
-	//	log.Error("failed to save url", err.Error())
+	//	log.Error("failed to save url", "error", err.Error())
 	//	os.Exit(1)
 	//}
 	//log.Info("Successfully saved url", slog.Int64("id", id))
-
-	alias := "google"
-	resURL, err := storage.GetURL(alias)
-	if err != nil {
-		log.Error("failed to retrieve url", err.Error())
-	} else {
-		log.Info(fmt.Sprintf("Get url for alias=%s, url=%s", alias, resURL))
-	}
-
-	alias = "yandex"
-	resURL, err = storage.GetURL(alias)
-	if err != nil {
-		log.Error(fmt.Sprintf("for alias \"%s\" failed to retrieve url", alias), err.Error())
-	} else {
-		log.Info(fmt.Sprintf("Get url for alias=%s, url=%s", alias, resURL))
-	}
-
-	alias = "google"
-	err = storage.DeleteURL(alias)
-	if err != nil {
-		log.Error("failed to delete url", err.Error())
-	} else {
-		log.Info(fmt.Sprintf("Delete url for alias=%s", alias))
-	}
-
-	id, err := storage.SaveURL("https://google.com", "google")
-	if err != nil {
-		log.Error("failed to save url", err.Error())
-		os.Exit(1)
-	}
-	log.Info("Successfully saved url", slog.Int64("id", id))
+	///////////////////////////////////////////////////////////////////////////
 
 	router := chi.NewRouter()
-
 	router.Use(middleware.RequestID)
 	router.Use(middleware.Logger)
 	router.Use(mwLogger.New(log))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
+	router.Post("/url", save.New(log, storage))
+
+	log.Info("starting server", slog.String("address", cfg.Address))
+
+	srv := &http.Server{
+		Addr:              cfg.Address,
+		Handler:           router,
+		ReadHeaderTimeout: cfg.HTTPServer.Timeout,
+		WriteTimeout:      cfg.HTTPServer.Timeout,
+		IdleTimeout:       cfg.HTTPServer.IdleTimeout,
+	}
+
+	if err := srv.ListenAndServe(); err != nil {
+		log.Error("failed to start server")
+	}
 	//TODO: run server
 }
 
