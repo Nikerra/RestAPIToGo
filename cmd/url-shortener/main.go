@@ -2,6 +2,7 @@ package main
 
 import (
 	"RestApi/internal/config"
+	get_url "RestApi/internal/http-server/hadlers/url/get-url"
 	"RestApi/internal/http-server/hadlers/url/save"
 	mwLogger "RestApi/internal/http-server/middleware/logger"
 	"RestApi/internal/lib/handlers/slogpretty"
@@ -87,6 +88,7 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	router.Post("/url", save.New(log, storage))
+	router.Post("/get-url", get_url.New(log, storage))
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 

@@ -1,8 +1,7 @@
-package save
+package get_url
 
 import (
 	resp "RestApi/internal/lib/api/response"
-	"RestApi/internal/lib/random"
 	"RestApi/internal/storage"
 	"errors"
 	"github.com/go-chi/chi/v5/middleware"
@@ -13,25 +12,21 @@ import (
 )
 
 type Request struct {
-	URL   string `json:"url" validate:"required,url"`
-	Alias string `json:"alias,omitempty"`
+	Alias string `json:"alias" validate:"required"`
 }
 
 type Response struct {
+	URL string `json:"url,omitempty"`
 	resp.Response
-	Alias string `json:"alias,omitempty"`
 }
 
-// TODO: move to config
-const aliasLength = 6
-
-type URLSaver interface {
-	SaveURL(urlToSave string, alias string) (int64, error)
+type URLGetter interface {
+	GetURL(alias string) (string, error)
 }
 
-func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
+func New(log *slog.Logger, getter URLGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.url.save.New"
+		const op = "handlers.url.get-url.New"
 
 		log = log.With(
 			slog.String("op", op),
@@ -57,31 +52,25 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 			return
 		}
 
-		alias := req.Alias
-		if alias == "" {
-			alias = random.NewRandomString(aliasLength)
-			//TODO: if alias already exists, write an implementation
-		}
-
-		id, err := urlSaver.SaveURL(req.URL, alias)
-		if errors.Is(err, storage.ErrURLExists) {
-			log.Info("url already exists", slog.String("url", req.URL))
-			render.JSON(w, r, resp.Error("url already exists"))
+		resUrl, err := getter.GetURL(req.Alias)
+		if errors.Is(err, storage.ErrURLNotFound) {
+			log.Info("url not found", slog.String("alias", req.Alias))
+			render.JSON(w, r, resp.Error("url not found"))
 
 			return
 		}
 		if err != nil {
-			log.Error("failed to add url", "error", err.Error())
-			render.JSON(w, r, resp.Error("failed to add url"))
+			log.Error("failed to get url", "error", err.Error())
+			render.JSON(w, r, resp.Error("failed to get url"))
 
 			return
 		}
 
-		log.Info("url added", slog.Int64("id", id))
+		log.Info("url retrieved", slog.String("alias", req.Alias))
 
 		render.JSON(w, r, Response{
 			Response: resp.OK(),
-			Alias:    alias,
+			URL:      resUrl,
 		})
 	}
 }
