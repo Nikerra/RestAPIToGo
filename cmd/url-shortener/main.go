@@ -2,6 +2,7 @@ package main
 
 import (
 	"RestApi/internal/config"
+	detele_url "RestApi/internal/http-server/hadlers/url/detele-url"
 	get_url "RestApi/internal/http-server/hadlers/url/get-url"
 	"RestApi/internal/http-server/hadlers/url/save"
 	mwLogger "RestApi/internal/http-server/middleware/logger"
@@ -89,6 +90,7 @@ func main() {
 
 	router.Post("/url", save.New(log, storage))
 	router.Post("/get-url", get_url.New(log, storage))
+	router.Delete("/delete-url", detele_url.New(log, storage))
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
