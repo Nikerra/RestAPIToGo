@@ -2,6 +2,7 @@ package main
 
 import (
 	"RestApi/internal/config"
+	"RestApi/internal/http-server/hadlers/redirect"
 	detele_url "RestApi/internal/http-server/hadlers/url/detele-url"
 	get_url "RestApi/internal/http-server/hadlers/url/get-url"
 	"RestApi/internal/http-server/hadlers/url/save"
@@ -39,48 +40,6 @@ func main() {
 	}
 	log.Info("Starting db connection")
 
-	/////////////////////////////////////////////////////////////////////////
-	////id, err := storage.SaveURL("https://google.com", "google")
-	////if err != nil {
-	////	log.Error("failed to save url", "error", err.Error())
-	////	os.Exit(1)
-	////}
-	////log.Info("Successfully saved url", slog.Int64("id", id))
-	//
-	//alias := "google"
-	//resURL, err := storage.GetURL(alias)
-	//if err != nil {
-	//	log.Error("failed to retrieve url", "error", err.Error())
-	//} else {
-	//	log.Info(fmt.Sprintf("Get url for alias=%s, url=%s", alias, resURL))
-	//}
-	//
-	//alias = "yandex"
-	//resURL, err = storage.GetURL(alias)
-	//if err != nil {
-	//	log.Error(
-	//		fmt.Sprintf("for alias \"%s\" failed to retrieve url", alias),
-	//		"error", err.Error())
-	//} else {
-	//	log.Info(fmt.Sprintf("Get url for alias=%s, url=%s", alias, resURL))
-	//}
-	//
-	//alias = "google"
-	//err = storage.DeleteURL(alias)
-	//if err != nil {
-	//	log.Error("failed to delete url", "error", err.Error())
-	//} else {
-	//	log.Info(fmt.Sprintf("Delete url for alias=%s", alias))
-	//}
-	//
-	//id, err := storage.SaveURL("https://google.com", "google")
-	//if err != nil {
-	//	log.Error("failed to save url", "error", err.Error())
-	//	os.Exit(1)
-	//}
-	//log.Info("Successfully saved url", slog.Int64("id", id))
-	///////////////////////////////////////////////////////////////////////////
-
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(middleware.Logger)
@@ -88,9 +47,17 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
-	router.Post("/url", save.New(log, storage))
-	router.Post("/get-url", get_url.New(log, storage))
-	router.Delete("/delete-url", detele_url.New(log, storage))
+	router.Route("/url", func(r chi.Router) {
+		r.Use(middleware.BasicAuth("url-shortener", map[string]string{
+			cfg.HTTPServer.User: cfg.HTTPServer.Password,
+		}))
+
+		r.Post("/", save.New(log, storage))
+		r.Post("/get-url", get_url.New(log, storage))
+		r.Delete("/delete-url", detele_url.New(log, storage))
+	})
+
+	router.Get("/{alias}", redirect.New(log, storage))
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
