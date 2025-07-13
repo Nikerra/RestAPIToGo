@@ -3,8 +3,8 @@ package main
 import (
 	"RestApi/internal/config"
 	"RestApi/internal/http-server/hadlers/redirect"
-	detele_url "RestApi/internal/http-server/hadlers/url/detele-url"
-	get_url "RestApi/internal/http-server/hadlers/url/get-url"
+	"RestApi/internal/http-server/hadlers/url/delete"
+	"RestApi/internal/http-server/hadlers/url/get"
 	"RestApi/internal/http-server/hadlers/url/save"
 	mwLogger "RestApi/internal/http-server/middleware/logger"
 	"RestApi/internal/lib/handlers/slogpretty"
@@ -53,8 +53,8 @@ func main() {
 		}))
 
 		r.Post("/", save.New(log, storage))
-		r.Post("/get-url", get_url.New(log, storage))
-		r.Delete("/delete-url", detele_url.New(log, storage))
+		r.Post("/get-url", get.New(log, storage))
+		r.Delete("/delete-url", delete.New(log, storage))
 	})
 
 	router.Get("/{alias}", redirect.New(log, storage))

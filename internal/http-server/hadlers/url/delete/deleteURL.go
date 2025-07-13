@@ -1,4 +1,4 @@
-package get_url
+package delete
 
 import (
 	resp "RestApi/internal/lib/api/response"
@@ -16,17 +16,17 @@ type Request struct {
 }
 
 type Response struct {
-	URL string `json:"url,omitempty"`
 	resp.Response
 }
 
-type URLGetter interface {
-	GetURL(alias string) (string, error)
+//go:generate go run github.com/vektra/mockery/v2@latest --name=DeleteURL
+type DeleteURL interface {
+	DeleteURL(alias string) error
 }
 
-func New(log *slog.Logger, getter URLGetter) http.HandlerFunc {
+func New(log *slog.Logger, deleteURL DeleteURL) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.url.get-url.New"
+		const op = "handlers.url.delete-url.New"
 
 		log = log.With(
 			slog.String("op", op),
@@ -52,7 +52,7 @@ func New(log *slog.Logger, getter URLGetter) http.HandlerFunc {
 			return
 		}
 
-		resUrl, err := getter.GetURL(req.Alias)
+		err = deleteURL.DeleteURL(req.Alias)
 		if errors.Is(err, storage.ErrURLNotFound) {
 			log.Info("url not found", slog.String("alias", req.Alias))
 			render.JSON(w, r, resp.Error("url not found"))
@@ -61,7 +61,7 @@ func New(log *slog.Logger, getter URLGetter) http.HandlerFunc {
 		}
 		if err != nil {
 			log.Error("failed to get url", "error", err.Error())
-			render.JSON(w, r, resp.Error("failed to get url"))
+			render.JSON(w, r, resp.Error("failed to delete url"))
 
 			return
 		}
@@ -70,7 +70,6 @@ func New(log *slog.Logger, getter URLGetter) http.HandlerFunc {
 
 		render.JSON(w, r, Response{
 			Response: resp.OK(),
-			URL:      resUrl,
 		})
 	}
 }
