@@ -1,8 +1,8 @@
 package save_test
 
 import (
-	"RestApi/internal/http-server/hadlers/url/save"
-	"RestApi/internal/http-server/hadlers/url/save/mocks"
+	"RestApi/internal/http-server/handlers/url/save"
+	"RestApi/internal/http-server/handlers/url/save/mocks"
 	"bytes"
 	"encoding/json"
 	"errors"

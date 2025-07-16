@@ -1,8 +1,8 @@
 package delete_test
 
 import (
-	"RestApi/internal/http-server/hadlers/url/delete"
-	"RestApi/internal/http-server/hadlers/url/delete/mocks"
+	"RestApi/internal/http-server/handlers/url/delete"
+	"RestApi/internal/http-server/handlers/url/delete/mocks"
 	"RestApi/internal/storage"
 	"bytes"
 	"encoding/json"

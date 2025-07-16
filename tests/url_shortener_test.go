@@ -1,8 +1,11 @@
+//go:build functional
+// +build functional
+
 package tests
 
 import (
-	"RestApi/internal/http-server/hadlers/url/delete"
-	"RestApi/internal/http-server/hadlers/url/save"
+	"RestApi/internal/http-server/handlers/url/delete"
+	"RestApi/internal/http-server/handlers/url/save"
 	"RestApi/internal/lib/api"
 	"RestApi/internal/lib/random"
 	"github.com/brianvoe/gofakeit/v6"

@@ -1,8 +1,13 @@
-env: "local" # local, dev, prod
+env: "local"
 storage_path: "./storage/storage.db"
+database:
+  host: "${DB_HOST}"
+  port: "${DB_PORT_IN}"
+  name: "${DB_NAME}"
+  ssl_mode: "${DB_SSLMODE}"
 http_server:
   address: "localhost:8082"
   timeout: 4s
   idle_timeout: 60s
-  user: "user"
-  password: "pass"
+  user: "${HTTP_USER}"
+  password: "${HTTP_PASSWORD}"

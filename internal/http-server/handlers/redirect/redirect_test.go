@@ -1,8 +1,8 @@
 package redirect_test
 
 import (
-	"RestApi/internal/http-server/hadlers/redirect"
-	"RestApi/internal/http-server/hadlers/url/get/mocks"
+	"RestApi/internal/http-server/handlers/redirect"
+	"RestApi/internal/http-server/handlers/url/get/mocks"
 	"RestApi/internal/lib/api"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"

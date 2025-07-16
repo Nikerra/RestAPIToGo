@@ -1,8 +1,8 @@
 package get_test
 
 import (
-	"RestApi/internal/http-server/hadlers/url/get"
-	"RestApi/internal/http-server/hadlers/url/get/mocks"
+	"RestApi/internal/http-server/handlers/url/get"
+	"RestApi/internal/http-server/handlers/url/get/mocks"
 	"RestApi/internal/storage"
 	"bytes"
 	"encoding/json"
